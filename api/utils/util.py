@@ -2,7 +2,7 @@ from decouple import config
 import bcrypt
 import jwt
 
-SALT=config('SALT')
+SALT = config('SALT')
 
 def hash_password(password):
 
