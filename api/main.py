@@ -213,5 +213,18 @@ def handleTwil():
   response = {"completion": response['choices'][0]['message']['content']}
   return jsonify(response)
 
+
+def delete_user(user):
+  mydb = dbConnect()
+  mycursor = mydb.cursor()
+  sql = "DELETE * FROM users WHERE user = %s"
+  val = (user,)
+
+  mycursor.execute(sql, val)
+  mydb.commit()
+  
+  
+  
+  
 if __name__ == '__main__':
     app.run(port=3030,debug=True)
