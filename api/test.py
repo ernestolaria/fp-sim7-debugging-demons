@@ -1,29 +1,31 @@
 import json
 import pytest
+from decouple import config
 from assertpy import assert_that
 import requests
-import main
+from main import app
 
 
 
-# TOKEN = config('API_TOKEN')
+#TOKEN = config('API_TOKEN')
 
 @pytest.fixture
 def client():
-    main.app.config['TESTING'] = True
-    with main.app.test_client() as client:
+    app.config['TESTING'] = True
+    with app.test_client() as client:
         yield client 
         
 
 
-def test_handlePrompt(client):
+def test_handlePrompt_ok(client):
     # Prepare data for request
     data = {
         "user": "TestUser",
         "topic": "TestTopic",
         "key_points": ["Data Algorithms", "Fibonacci"],
-        "token": "valid_token"
+        "token": "valid_token" #change this for a valid token retrieve for the DB
     }
+   
     headers = {"Content-Type": "application/json"}
 
     # Send a POST request to the server
@@ -38,6 +40,31 @@ def test_handlePrompt(client):
     
     # Check that the value of the completion key is type of string.
     assert_that(response_data["completion"]).is_instance_of(str)
+
+def test_handlePrompt_invalid_token(client):
+    # Prepare data for request
+    data = {
+        "user": "TestUser",
+        "topic": "TestTopic",
+        "key_points": ["Data Algorithms", "Fibonacci"],
+        "token": "invalid_token"
+    }
+   
+    headers = {"Content-Type": "application/json"}
+
+    # Send a POST request to the server
+    response = client.post('/prompt', data=json.dumps(data), headers=headers) #Not sure if headers if necessary I think no
+
+    # Check that the server returns a 401 status code
+    assert_that(response.status_code).is_equal_to(requests.codes.unauthorized)
+
+    # Check that the server returns a message for the invalid token error
+    response_data = json.loads(response.get_data(as_text=True))
+    assert_that(response_data['message']).is_equal_to("Invalid token.")
+    
+   
+    
+
    
     
 
